@@ -1,4 +1,4 @@
-# Ren'Py Translator Tools By NAT - Publish Versions
+# Project Ren'Py Translator Tools By NAT - Publish Versions
 เครื่องมือแปลภาษาเกมเอ็นจิ้น Ren'Py ซึ่งเป็นเกมแนว Visual Novel ที่สามารถสร้างไฟล์ภาษาผ่าน Ren'Py Editer และปรับแก้โค้ดเพื่อสลับภาษาได้
 
 โปรแกรมนี้ถูกสร้างโดย นายณัฐภัทร ปัดไธสง โดยใช้ AI (GPT,Gemini,Claude) ในการสร้างและออกแบบผ่านเครื่องมือ Visual Studio Code และ Antigravity
