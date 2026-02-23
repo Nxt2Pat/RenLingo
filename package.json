@@ -1,0 +1,37 @@
+{
+    "name": "RenPy-Translator-V1-By-NAT",
+    "version": "1.0.0",
+    "description": "Simple Ren'Py Auto Translator Make By NAT",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "dist": "electron-builder"
+    },
+    "build": {
+        "appId": "com.nat.renpytranslator",
+        "productName": "RenPy Translator Pro V1.0.0 By NAT",
+        "directories": {
+            "output": "dist"
+        }
+    },
+    "win": {
+        "target": [
+            "nsis",
+            "portable"
+        ],
+        "icon": "icon.ico"
+    },
+    "keywords": [],
+    "author": "NAT",
+    "license": "ISC",
+    "type": "commonjs",
+    "dependencies": {
+        "fs-extra": "^11.3.3",
+        "glob": "^13.0.0",
+        "google-translate-api-x": "^10.7.2"
+    },
+    "devDependencies": {
+        "electron": "^39.2.7",
+        "electron-builder": "^26.0.12"
+    }
+}

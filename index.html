@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Ren'Py Auto Translator Pro V1.1 By NAT</title>
+    <style>
+        :root {
+            --bg-color: #1e1e24;
+            --card-color: #2b2b36;
+            --accent-color: #00bcd4;
+            --text-color: #ffffff;
+            --success-color: #4caf50;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+        }
+        h1 { margin-top: 0; font-weight: 300; letter-spacing: 1px; text-align: center; }
+        .container {
+            background-color: var(--card-color);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .settings-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; }
+        select, input[type="number"], input[type="text"] {
+            padding: 8px;
+            border-radius: 4px;
+            background: #111;
+            color: white;
+            border: 1px solid #444;
+        }
+        #folder-path { width: 80%; margin-bottom: 15px; color: #00bcd4; }
+        .btn {
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 5px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 0 10px var(--accent-color); }
+        .btn:disabled { background-color: #555; cursor: not-allowed; transform: none; box-shadow: none;}
+        
+        #log-area {
+            flex-grow: 1;
+            margin-top: 20px;
+            background-color: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            overflow-y: auto;
+            color: #ddd;
+            text-align: left;
+            line-height: 1.5;
+        }
+        .log-info { color: #aaa; }
+        .log-success { color: var(--success-color); }
+        .log-warn { color: #ff9800; }
+        .log-error { color: #f44336; }
+
+        #progress-container { width: 100%; background-color: #444; height: 8px; border-radius: 4px; margin-top: 20px; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background-color: var(--accent-color); transition: width 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Ren'Py Translator <span style="color:var(--accent-color)">Pro</span></h1>
+        
+        <input type="text" id="folder-path" placeholder="กรุณาเลือกโฟลเดอร์เกม..." readonly>
+        <br>
+
+        <div class="settings-row">
+            <div>
+                <label>แปลเป็นภาษา:</label>
+                <select id="target-lang">
+                    <option value="th">ภาษาไทย (Thai)</option>
+                    <option value="en">English</option>
+                    <option value="ja">Japanese</option>
+                    <option value="ko">Korean</option>
+                    <option value="ru">Russian</option>
+                    <option value="vi">Vietnamese</option>
+                </select>
+            </div>
+            <div>
+                <label>Batch Size (ความเร็ว):</label>
+                <input type="number" id="batch-size" value="50" min="10" max="100">
+            </div>
+        </div>
+
+        <button id="btn-select" class="btn">📂 เลือกโฟลเดอร์</button>
+        <button id="btn-start" class="btn" disabled>🚀 เริ่มแปลภาษา</button>
+
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+    </div>
+
+    <div id="log-area">
+        <div class="log-info">ระบบพร้อมใช้งาน...</div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        document.getElementById('btn-select').addEventListener('click', async () => {
+            const path = await ipcRenderer.invoke('select-folder');
+            if (path) {
+                document.getElementById('folder-path').value = path;
+                document.getElementById('btn-start').disabled = false;
+                addLog('✅ เลือกโฟลเดอร์แล้ว: ' + path, 'success');
+            }
+        });
+
+        document.getElementById('btn-start').addEventListener('click', () => {
+            const config = {
+                folderPath: document.getElementById('folder-path').value,
+                targetLang: document.getElementById('target-lang').value,
+                batchSize: parseInt(document.getElementById('batch-size').value) || 50
+            };
+
+            document.getElementById('btn-start').disabled = true;
+            document.getElementById('btn-select').disabled = true;
+            addLog('🚀 เริ่มกระบวนการแปลและสำรองข้อมูล...', 'warn');
+            
+            ipcRenderer.send('start-translation', config);
+        });
+
+        ipcRenderer.on('log', (event, data) => addLog(data.msg, data.type));
+        ipcRenderer.on('progress', (event, percent) => {
+            document.getElementById('progress-bar').style.width = percent + '%';
+        });
+
+        ipcRenderer.on('done', () => {
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-select').disabled = false;
+            addLog('🎉 เสร็จสมบูรณ์! ตรวจสอบไฟล์ในโฟลเดอร์ MyTranslations', 'success');
+            alert('แปลภาษาเสร็จเรียบร้อยแล้ว!');
+        });
+
+        function addLog(msg, type = 'info') {
+            const logArea = document.getElementById('log-area');
+            const div = document.createElement('div');
+            div.textContent = `> ${msg}`;
+            div.className = `log-${type}`;
+            logArea.appendChild(div);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+    </script>
+</body>
+</html>
